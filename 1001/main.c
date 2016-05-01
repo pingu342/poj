@@ -65,10 +65,14 @@ static void mul(BigNum *a, BigNum *b)
 			tmp += b->mantissa[i] * origin_a.mantissa[j];
 			a->mantissa[i+j] = (tmp % 10);
 			a->mantissa[i+j+1] += (tmp / 10);
+			if ((i+j+1) > a->msd && a->mantissa[i+j+1] > 0) {
+				a->msd = i + j + 1;
+			} else if ((i+j) > a->msd && a->mantissa[i+j] > 0) {
+				a->msd = i + j;
+			}
 		}
 	}
 	a->exponent = origin_a.exponent + b->exponent;
-	a->msd = b->msd + origin_a.msd + 1;
 }
 
 static char *toString(char *buf, BigNum *bigNum)
