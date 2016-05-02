@@ -1,7 +1,12 @@
-* main_001.c
-	* 番号をそのまま配列インデックスとする
-	* Time:688MS Memory:39564K
+* index
+	* 番号を配列のindexとして使用
+	* メモリを食う割にはqsortより遅い
+* qsort
+	* 番号リストを読み終えた後にqsort
+	* indexよりも高速かつ省メモリ
 
-* main_002.c
-	* 番号のリストを読み終えた後にqsortする
-	* Time:516MS Memory:776K
+| 手法 | ソースコード | Time | Memory |
+|:---:|:---:|:---:|:---:|
+|index|main_001|688MS|39564K|
+|qsort|main_002|516MS|776K|
+
