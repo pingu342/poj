@@ -1,3 +1,5 @@
+// 12個の値の平均を求める
+
 #include <stdio.h>
 
 int main()

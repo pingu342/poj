@@ -1,3 +1,6 @@
+// f(n)=1/2+1/3+...+1/(n+1)
+// 与えられた値cに対してf(n)>cとなる最小のnを求める
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

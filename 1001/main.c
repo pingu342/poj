@@ -1,3 +1,6 @@
+// R^nの演算を精密に精度を落とさずに行う
+// Rは実数(0.0<R)、nは1以上の整数とする
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

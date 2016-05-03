@@ -1,3 +1,6 @@
+// 電話番号の重複数を調べる
+// 電話番号をソートした後に重複数をカウントする
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
