@@ -58,31 +58,19 @@ int main()
 */
 
 /* [解答]
+ *
+ * 最初に切れ端を長いもの順に整列させてからDFSすること
+ * そのほうが探索木の点と辺の数が少ない（つまり計算量が少ない）
+ * 短いもの順では計算量が非常に多い
  */
-
-/*
-void print(int m[], int used[], int sz, int len, int n)
-{
-	int i, j;
-	for (i=n; i<=n; i++) {
-		printf("len:%d n:%d/%d use:", len, i, n);
-		for (j=0; j<sz; j++) {
-			if (used[j] == i)
-				printf("%d(i:%d) ", m[j], j);
-		}
-		printf("\n");
-	}
-}
-*/
 
 // m[]    : 切断後の木（切れ端）それぞれの長さ
 // used[] : 切れ端の探索状況
 // sz     : 切れ端の本数
-// n      : 「n本目」の元木を得ようと試みている
 // next   : 次に試す切れ端
 // len    : 元木の長さ
-// remlen : 「n本目」の元木を得るには残りremlenの長さの切れ端が必要
-int dfs(int m[], int used[], int sz, int n, int next, int len, int remlen)
+// sum    : 「n本目」の元木を得る途中の合計長さ
+int dfs(int m[], int used[], int sz, int next, int len, int sum)
 {
 	int i, nouse=0, pre=0;
 
@@ -91,25 +79,19 @@ int dfs(int m[], int used[], int sz, int n, int next, int len, int remlen)
 			nouse++;
 			if (pre != m[i]) { //前に試してダメだった切れ端と同じ長さの切れ端は試す意味がないのでショートカット
 				pre = m[i];
-				if (m[i] < remlen) {
-					//元木を得るにはもっと切れ端が必要
-					used[i] = n; //この切れ端は「n本目」の元木を得るために使用した
-					if (dfs(m, used, sz, n, i+1, len, remlen-m[i]))
+				if (sum + m[i] <= len) {
+					used[i] = 1; //この切れ端は元木を得るために使用した
+					if (dfs(m, used, sz, (sum+m[i]==len)?0:i+1, len, ((sum+m[i])%len)))
 						return 1; //成功
 					used[i] = 0;
-				} else if (m[i] > remlen) {
-				} else {
-					//元木が得られた
-					used[i] = n; //この切れ端は「n本目」の元木を得るために使用した
-					if (dfs(m, used, sz, n+1, 0, len, len)) //まだ残っている切れ端を使用して「n+1本目」の元木を得る
-						return 1; //成功
-					used[i] = 0;
+					if (sum == 0)
+						return 0; //失敗（ここでショートカットしないとTLE起こる）
 				}
 			}
 		}
 	}
 
-	if (next==0 && remlen==len && nouse==0) //ちょうど元木が得られた所で、切れ端の残りが0本になった
+	if (next==0 && sum==0 && nouse==0) //ちょうど元木が得られた所で、切れ端の残りが0本になった
 		return 1; //成功
 
 	return 0; //失敗
@@ -123,6 +105,7 @@ static int compare(const void *a, const void *b)
 int main()
 {
 	int sz, m[64], used[64], sum, max, i;
+
 	while (scanf("%d", &sz) != EOF && sz) {
 		for (i=0,sum=0,max=0; i<sz && scanf("%d", &m[i]); i++) {
 			if (m[i] > max)
@@ -136,8 +119,9 @@ int main()
 
 		for (i=max; i<sum; i++)
 			if (sum % i == 0)
-				if (dfs(m, used, sz, 1, 0, i, i))
+				if (dfs(m, used, sz, 0, i, 0))
 					break;
+
 		printf("%d\n", i);
 	}
 }
