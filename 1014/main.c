@@ -24,6 +24,9 @@ int ccc[6];
 
 int check(int v, int d)
 {
+	// 全探索バージョン
+	// ぎりぎりTime Limit ExceededにならずAcceptedになった
+	
 	int i,m=in[v-1],n=d/v,r;
 	for (i=n>m?m:n; i>=0; i--) {
 		r = d-i*v;
