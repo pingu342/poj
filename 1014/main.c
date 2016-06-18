@@ -27,7 +27,7 @@ int check(int v, int d)
 	// 全探索バージョン
 	// ぎりぎりTime Limit ExceededにならずAcceptedになった
 	
-	int i,m=in[v-1],n=d/v,r;
+	int i,m=in[v-1],n=d/v,r; //m:価値vのおはじきの枚数
 	for (i=n>m?m:n; i>=0; i--) {
 		r = d-i*v;
 		if (r==0) return 1; //分割できた
@@ -43,8 +43,8 @@ int main()
 	int n, i, s, r;
 	for (n=1;scanf("%d %d %d %d %d %d", &in[0], &in[1], &in[2], &in[3], &in[4], &in[5]);n++) {
 		for (i=0,s=0;i<6;i++) {
-			s+=in[i]*(i+1);
-			ccc[i] = s;
+			s+=in[i]*(i+1); //価値x枚数の合計 (in[i]は、価値i+1のおはじきの枚数)
+			ccc[i] = s; // (ccc[i]は、価値1以上〜価値i+1以下のおはじきの価値x枚数の合計)
 		}
 		if (s==0) break;
 		//printf("s=%d(%f)\n", s, (float)s/2.);
