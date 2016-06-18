@@ -38,14 +38,26 @@ void print(int m[], int used[], int sz)
 		printf("\n");
 }
 
-void dfs(int m[], int used[], int sz, int next)
+void dfs1(int m[], int used[], int sz, int next)
 {
 	int i;
 	for (i=next; i<sz; i++) {
 		used[i] = 1;
 		print(m, used, sz);
-		dfs(m, used, sz, i+1);
+		dfs1(m, used, sz, i+1);
 		used[i] = 0;
+	}
+}
+
+void dfs2(int m[], int used[], int sz, int next)
+{
+	if (next < sz) {
+		used[next] = 1;
+		dfs2(m, used, sz, next+1); //この値を選んで次の値に進む
+		used[next] = 0;
+		dfs2(m, used, sz, next+1); //この値を選ばずに次の値に進む
+	} else if (next == sz) {
+		print(m, used, sz);
 	}
 }
 
@@ -53,10 +65,14 @@ int main()
 {
 	int m[5] = {1,2,3,4,5}, sz=5;
 	int used[5] = {0};
-	dfs(m, used, sz, 0);
+	//方法1
+	dfs1(m, used, sz, 0);
+	printf("\n");
+	//方法2
+	dfs2(m, used, sz, 0);
 }
 */
-
+#if 1
 /* [解答]
  *
  * 最初に切れ端を長いもの順に整列させてからDFSすること
@@ -125,6 +141,7 @@ int main()
 		printf("%d\n", i);
 	}
 }
+#endif
 
 /* テストデータ
 
