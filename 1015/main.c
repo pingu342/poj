@@ -52,8 +52,8 @@
 
 #if 1
 
-int n, m, pi[200], di[200], poo[200], sel[21], sub[21], add_pi[21], add_di[21];
-int best_sel[21], best_sub, best_add_pi, best_add_di;
+int n, m, pi[200], di[200], select[20];
+int best_select[20], best_sub_pd, best_sum_p, best_sum_d;
 
 void print(int a[], int sz)
 {
@@ -63,47 +63,28 @@ void print(int a[], int sz)
 	printf("\n");
 }
 
-void update(int sub, int add_pi, int add_di)
+void update(int sub_pd, int sum_p, int sum_d)
 {
 	//print();
-	if ((best_sub > abs(sub)) ||
-		(best_sub == abs(sub) && (best_add_pi+best_add_di) < (add_pi+add_di))) {
-		best_sub = abs(sub);
-		best_add_di = add_di;
-		best_add_pi = add_pi;
-		memcpy(best_sel, sel, sizeof(sel));
+	if ((best_sub_pd > abs(sub_pd)) ||
+		(best_sub_pd == abs(sub_pd) && (best_sum_p+best_sum_d) < (sum_p+sum_d))) {
+		best_sub_pd = abs(sub_pd);
+		best_sum_d = sum_d;
+		best_sum_p = sum_p;
+		memcpy(best_select, select, sizeof(select));
 	}
 }
 
-int dfs(int next, int num)
+void search(int num, int next, int sub_pd, int sum_p, int sum_d)
 {
-	int i;
-	//printf("%d %d\n", next, num);
-	for (i=next; i<n; i++) {
-		sel[num] = poo[i];
-		sub[num] = sub[num-1] + (di[poo[i]] - pi[poo[i]]);
-		add_pi[num] = add_pi[num-1] + pi[poo[i]];
-		add_di[num] = add_di[num-1] + di[poo[i]];
-		if (best_sub >= abs(sub[num])) {
-			if (num==m)
-				update(sub[num], add_pi[num], add_di[num]);
-			else
-				dfs(i+1, num+1);
-		}
+	if (next < n && num < m && best_sub_pd >= abs(sub_pd)) {
+		select[num] = next;
+		search(num+1, next+1, sub_pd+(pi[next]-di[next]), sum_p+pi[next], sum_d+di[next]);
+		search(num, next+1, sub_pd, sum_p, sum_d);
+	} else if (num == m) {
+		//print(select, m);
+		update(sub_pd, sum_p, sum_d);
 	}
-	return 0;
-}
-
-int comp1(const void *a, const void *b)
-{
-	int ia=*(int *)a, ib=*(int *)b;
-	return (pi[ib]+di[ib])-(pi[ia]+di[ia]);
-	//return (pi[ia]+di[ia])-(pi[ib]+di[ib]);
-}
-
-int comp2(const void *a, const void *b)
-{
-	return *(int *)a-*(int *)b;
 }
 
 int main()
@@ -112,18 +93,14 @@ int main()
 	for (no=1; scanf("%d %d",&n,&m) && n>0; no++) {
 		for (i=0; i<n; i++) {
 			scanf("%d %d", &pi[i], &di[i]);
-			sel[i] = 0; poo[i] = i+1;
+			select[i] = 0;
 		}
-		qsort(poo, n, sizeof(int), comp1);
-		//print(poo, n);
-		sub[0] = add_pi[0] = add_di[0] = 0;
-		best_sub = 20;
-		best_add_pi = best_add_di = 0;
-		dfs(0, 1);
-		printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, best_add_pi, best_add_di);
-		qsort(best_sel+1, m, sizeof(int), comp2);
-		for (i=1; i<=m; i++)
-			printf(" %d", best_sel[i]);
+		best_sub_pd = 100;
+		best_sum_p = best_sum_d = 0;
+		search(0, 0, 0, 0, 0);
+		printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, best_sum_p, best_sum_d);
+		for (i=0; i<m; i++)
+			printf(" %d", best_select[i]+1);
 		printf("\n\n");
 	}
 }
