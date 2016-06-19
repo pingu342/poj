@@ -74,9 +74,9 @@ int check(int d)
 	//
 	for (i=0;i<6;i++) {
 		for (j=0;j<=d;j++) {
-			if (dp[j]>=0) dp[j]=in[i]; //価値jを作ったときに価値iのおはじきがdp[j]個余る
-			else if(j<i+1 || dp[j-i-1]<=0) dp[j]=-1; //価値jを作ることはできない
-			else dp[j]=dp[j-i-1]-1;
+			if (dp[j]>=0) dp[j]=in[i]; //価値の和jは既に作れているので、価値iのおはじきはdp[j]個余る
+			else if(j<i+1 || dp[j-i-1]<=0) dp[j]=-1; //価値0,..,iのおはじきでは価値の和jを作ることはできない
+			else dp[j]=dp[j-i-1]-1; //価値iのおはじきで、価値の和jを作ることができ、価値iのおはじきはdp[j]こ余る
 			//print(d, i);
 		}
 	}
