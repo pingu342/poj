@@ -1,6 +1,6 @@
 // 遠く離れたFrobniaという国では、裁判の判決は一般人で構成された陪審員により決定される
 // 裁判が始まる度に審査員は次のように選ばれる
-// 2つの組織(prosecutionとdefence)が陪審員の候補である人物に1から20のグレードを割り当てる
+// 2つの組織(prosecutionとdefence)が陪審員の候補である人物に0から20のグレードを割り当てる
 // 20が陪審員に最も適していることを表す
 // このグレードに基いて裁判官が陪審員を選ぶ
 // 陪審員の選択は2つの組織にとって満足がいくものでなければならない
@@ -52,67 +52,77 @@
 
 #if 1
 
-int n, m, pi[200], di[200], select[20];
-int memo[20][200][41];
+int n, m, pi[200], di[200];
+int dp[21][801];
+int sel[21][801][21]; //di-piの範囲はdi,piが最大20なので-20〜20の範囲、よってD(J)-P(J)の範囲は-20m〜20mで、mは最大20なので-400〜400となり、801パターンありうる
 
-void print(int a[], int sz)
+void print()
 {
-	int i;
-	for (i=0; i<sz; i++)
-		printf("%d ", a[i]);
+	int i, j;
+	for (i=1; i<=m; i++)
+		for (j=0; j<801; j++)
+			if (dp[i][j])
+				printf("%d,%d : %d\n", i, j-400, dp[i][j]);
 	printf("\n");
 }
 
-void search(int num, int next, int *sub_pd, int *sum_p, int *sum_d)
+void update(int num, int sub, int sum_dp, int i, int pre[])
 {
-	if (num < m && next == n) {
-		//m人を選ぶことができなかった
-		*sub_pd = 1000;
-		*sum_p = 0;
-		*sum_d = 0;
-	} else if (num < m && next < n) {
-		int _sub_pd[2], _sum_p[2], _sum_d[2], i;
+	int j;
+	if (dp[num][sub] < sum_dp) {
+		dp[num][sub] = sum_dp;
+		for (j=1; j<num; j++)
+			sel[num][sub][j] = pre[j];
+		sel[num][sub][j] = i;
+	}
+}
 
-		for (i=0; i<2; i++) {
-			_sub_pd[i] = *sub_pd;
-			_sum_p[i] = *sum_p;
-			_sum_d[i] = *sum_d;
+void search()
+{
+	int i, j, k, d, p;
+	for (i=1; i<=n; i++) {
+		d = di[i-1];
+		p = pi[i-1];
+		for (j=m; j>=2; j--) {
+			for (k=0; k<801; k++) {
+				if (dp[j-1][k] != 0) {
+					//dp[j][k+d-p] = max(dp[j][k+d-p], dp[j-1][k]+d+p);
+					update(j, k+d-p, dp[j-1][k]+d+p, i, sel[j-1][k]);
+				}
+			}
 		}
-
-		search(num, next+1, &_sub_pd[0], &_sum_p[0], &_sum_d[0]);
-
-		_sub_pd[1] += pi[next]-di[next];
-		_sum_p[1] += pi[next];
-		_sum_d[1] += di[next];
-		search(num+1, next+1, &_sub_pd[1], &_sum_p[1], &_sum_d[1]);
-
-		if ((abs(_sub_pd[0]) < abs(_sub_pd[1])) ||
-			(abs(_sub_pd[0]) == abs(_sub_pd[1]) && _sum_p[0]+_sum_d[0] > _sum_p[1]+_sum_d[1])) {
-			*sub_pd = _sub_pd[0];
-			*sum_p = _sum_p[0];
-			*sum_d = _sum_d[0];
-		} else {
-			*sub_pd = _sub_pd[1];
-			*sum_p = _sum_p[1];
-			*sum_d = _sum_d[1];
-		}
+		//dp[1][d-p+400] = max(dp[1][d-p+400], d+p);
+		update(1, d-p+400, d+p, i, NULL);
+		//print();
 	}
 }
 
 int main()
 {
-	int i, no, sub_pd, sum_p, sum_d;
+	int i, l, no;
 	for (no=1; scanf("%d %d",&n,&m) && n>0; no++) {
-		for (i=0; i<n; i++) {
+		for (i=0; i<n; i++)
 			scanf("%d %d", &pi[i], &di[i]);
-			select[i] = 0;
+		memset(dp, 0, sizeof(dp));
+		memset(sel, 0, sizeof(sel));
+		search();
+		for (int k = 0; k <= 400; ++k) { // |D(J)-P(J)|が0,1,2,...の順で検索
+			if (dp[m][k + 400] != 0 || dp[m][400 - k] != 0) {
+				k = (dp[m][k + 400] > dp[m][400 - k]) ? k + 400 : 400 - k;
+				int he = dp[m][k];
+				int sum_d=0, sum_p=0, sub_pd=0;
+				for (l=1; l<=m; l++) {
+					sum_p += pi[sel[m][k][l]-1];
+					sum_d += di[sel[m][k][l]-1];
+					sub_pd += di[sel[m][k][l]-1]-pi[sel[m][k][l]-1];
+				}
+				printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, sum_p, sum_d);
+				for (l=1; l<=m; l++)
+					printf(" %d", sel[m][k][l]);
+				printf("\n\n");
+				break;
+			}
 		}
-		sub_pd = sum_p = sum_d = 0;
-		search(0, 0, &sub_pd, &sum_p, &sum_d);
-		printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, sum_p, sum_d);
-//		for (i=0; i<m; i++)
-//			printf(" %d", best_select[i]+1);
-		printf("\n\n");
 	}
 }
 
@@ -338,6 +348,48 @@ test
 
 $ gcc test.c -o test
 $ ./test | ./main.out
+
+16 10
+0 4
+7 17
+12 3
+20 11
+1 4
+14 6
+0 7
+16 0
+17 13
+9 15
+13 0
+8 6
+8 7
+3 19
+9 17
+11 18
+
+o : Best jury has value 111 for prosecution and value 111 for defence:
+     2 4 6 7 8 9 10 13 15 16
+
+x : Best jury has value 112 for prosecution and value 112 for defence:
+     4 6 9 10 11 12 13 14 15 16
+
+          16 10
+   1:-4   0 4     4
++  2:-10  7 17    24
+   3:9    12 3    15
++* 4:9    20 11   31
+   5:-3   1 4     5
++* 6:8    14 6    20
++  7:-7   0 7     7
++  8:16   16 0    16
++* 9:4    17 13   30
++*10:-6   9 15    24
+ *11:13   13 0    13
+ *12:2    8 6     14
++*13:1    8 7     15
+ *14:-16  3 19    22
++*15:-8   9 17    26
++*16:-7   11 18   29
 
 */
 
