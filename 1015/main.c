@@ -53,7 +53,7 @@
 #if 1
 
 int n, m, pi[200], di[200], select[20];
-int best_select[20], best_sub_pd, best_sum_p, best_sum_d;
+int memo[20][200][41];
 
 void print(int a[], int sz)
 {
@@ -63,44 +63,55 @@ void print(int a[], int sz)
 	printf("\n");
 }
 
-void update(int sub_pd, int sum_p, int sum_d)
+void search(int num, int next, int *sub_pd, int *sum_p, int *sum_d)
 {
-	//print();
-	if ((best_sub_pd > abs(sub_pd)) ||
-		(best_sub_pd == abs(sub_pd) && (best_sum_p+best_sum_d) < (sum_p+sum_d))) {
-		best_sub_pd = abs(sub_pd);
-		best_sum_d = sum_d;
-		best_sum_p = sum_p;
-		memcpy(best_select, select, sizeof(select));
-	}
-}
+	if (num < m && next == n) {
+		//m人を選ぶことができなかった
+		*sub_pd = 1000;
+		*sum_p = 0;
+		*sum_d = 0;
+	} else if (num < m && next < n) {
+		int _sub_pd[2], _sum_p[2], _sum_d[2], i;
 
-void search(int num, int next, int sub_pd, int sum_p, int sum_d)
-{
-	if (next < n && num < m && best_sub_pd >= abs(sub_pd)) {
-		select[num] = next;
-		search(num+1, next+1, sub_pd+(pi[next]-di[next]), sum_p+pi[next], sum_d+di[next]);
-		search(num, next+1, sub_pd, sum_p, sum_d);
-	} else if (num == m) {
-		//print(select, m);
-		update(sub_pd, sum_p, sum_d);
+		for (i=0; i<2; i++) {
+			_sub_pd[i] = *sub_pd;
+			_sum_p[i] = *sum_p;
+			_sum_d[i] = *sum_d;
+		}
+
+		search(num, next+1, &_sub_pd[0], &_sum_p[0], &_sum_d[0]);
+
+		_sub_pd[1] += pi[next]-di[next];
+		_sum_p[1] += pi[next];
+		_sum_d[1] += di[next];
+		search(num+1, next+1, &_sub_pd[1], &_sum_p[1], &_sum_d[1]);
+
+		if ((abs(_sub_pd[0]) < abs(_sub_pd[1])) ||
+			(abs(_sub_pd[0]) == abs(_sub_pd[1]) && _sum_p[0]+_sum_d[0] > _sum_p[1]+_sum_d[1])) {
+			*sub_pd = _sub_pd[0];
+			*sum_p = _sum_p[0];
+			*sum_d = _sum_d[0];
+		} else {
+			*sub_pd = _sub_pd[1];
+			*sum_p = _sum_p[1];
+			*sum_d = _sum_d[1];
+		}
 	}
 }
 
 int main()
 {
-	int i, no;
+	int i, no, sub_pd, sum_p, sum_d;
 	for (no=1; scanf("%d %d",&n,&m) && n>0; no++) {
 		for (i=0; i<n; i++) {
 			scanf("%d %d", &pi[i], &di[i]);
 			select[i] = 0;
 		}
-		best_sub_pd = 100;
-		best_sum_p = best_sum_d = 0;
-		search(0, 0, 0, 0, 0);
-		printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, best_sum_p, best_sum_d);
-		for (i=0; i<m; i++)
-			printf(" %d", best_select[i]+1);
+		sub_pd = sum_p = sum_d = 0;
+		search(0, 0, &sub_pd, &sum_p, &sum_d);
+		printf("Jury #%d\nBest jury has value %d for prosecution and value %d for defence:\n", no, sum_p, sum_d);
+//		for (i=0; i<m; i++)
+//			printf(" %d", best_select[i]+1);
 		printf("\n\n");
 	}
 }
